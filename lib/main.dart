@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'second_page.dart';
@@ -39,10 +40,11 @@ class FirstPage extends StatelessWidget {
                   [
                     Text('Pattern 1'),
                     RaisedButton(
-                      child: Text('Next'),
+                      child: Text('ただ次画面に行って戻るだけ'),
                       onPressed: () {
                         Navigator.of(context).push(
-                          MaterialPageRoute(
+                          // MaterialDesignではなくiOS風のアニメーションで遷移
+                          CupertinoPageRoute(
                             builder: (context) {
                               return SecondPage();
                             },
@@ -56,7 +58,7 @@ class FirstPage extends StatelessWidget {
                   [
                     Text('Pattern 2'),
                     RaisedButton(
-                      child: Text('Next'),
+                      child: Text('行って戻った直後にダイアログを表示する'),
                       onPressed: () async {
                         await Navigator.of(context).push(
                           MaterialPageRoute(
@@ -65,6 +67,7 @@ class FirstPage extends StatelessWidget {
                             },
                           ),
                         );
+                        // ここは async-await で次画面遷移した先から戻る遷移の直後に実行される
                         showDialog(
                           context: context,
                           builder: (context) => SampleDialog(),
@@ -77,10 +80,11 @@ class FirstPage extends StatelessWidget {
                   [
                     Text('Pattern 3'),
                     RaisedButton(
-                      child: Text('Next'),
+                      child: Text('遷移後入力した内容を戻った直後ダイアログ表示'),
                       onPressed: () async {
-                        final result = await Navigator.of(context).push(
-                          MaterialPageRoute(
+                        // 遷移後の画面でpush
+                        final String result = await Navigator.of(context).push(
+                          MaterialPageRoute<String>(
                             builder: (context) {
                               return SecondTextInputPage();
                             },
@@ -126,7 +130,10 @@ class SampleDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final content = contentText ?? 'I\'m back!';
+    final content = contentText ?? 'I\'m back!'; // ?? - null判定（if null then...)
+    // 上記はあくまでもfinalであるcontentの初期化にcontentTextか、それがnullの場合リテラル代入
+    // ??=を使うと左辺がnullの場合に同じくfinalであるcontentTextへの代入になるのでエラー
+
     return AlertDialog(
       title: Text(
         'Alert',
