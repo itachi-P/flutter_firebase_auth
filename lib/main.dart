@@ -82,7 +82,7 @@ class FirstPage extends StatelessWidget {
                     RaisedButton(
                       child: Text('遷移後入力した内容を戻った直後ダイアログ表示'),
                       onPressed: () async {
-                        // 遷移後の画面でpush
+                        // 遷移後の画面でpopの引数に持たせた値を受け取る
                         final String result = await Navigator.of(context).push(
                           MaterialPageRoute<String>(
                             builder: (context) {
