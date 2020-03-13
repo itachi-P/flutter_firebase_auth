@@ -1,7 +1,4 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
-import 'second_page.dart';
 
 void main() => runApp(MyApp());
 
@@ -9,141 +6,153 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Navigator Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: FirstPage(),
-    );
+        // Provide a function to handle named routes. Use this function to
+        // identify the named route being pushed, and create the correct Screen.
+        onGenerateRoute: (RouteSettings settings) {
+          // ifの中だけにreturnを書くとエラーではないがIDEに注意される
+          MaterialPageRoute materialPageRoute;
+
+          // If you push the PassArguments route
+          if (settings.name == PassArgumentsScreen.routeName) {
+            // Cast the arguments to the correct type: ScreenArguments.
+            final ScreenArguments args = settings.arguments;
+
+            // Then, extract the required data from the arguments and
+            // pass the data to the correct screen.
+            materialPageRoute = MaterialPageRoute(
+              builder: (context) {
+                return PassArgumentsScreen(
+                  title: args.title,
+                  message: args.message,
+                );
+              },
+            );
+          }
+          return materialPageRoute;
+        },
+        title: 'Navigation with Arguments',
+        home: HomeScreen(),
+        // 3. Register the widget in the routes table
+        routes: {
+          ExtractArgumentsScreen.routeName: (context) =>
+              ExtractArgumentsScreen(),
+        });
   }
 }
 
-class FirstPage extends StatelessWidget {
-  FirstPage({Key key}) : super(key: key);
-
+class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('First Page'),
+        title: Text('Home Screen'),
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Container(
-            alignment: Alignment.topCenter,
-            padding:
-                EdgeInsets.only(top: MediaQuery.of(context).size.height / 4),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: <Widget>[
-                _buildContents(
-                  [
-                    Text('Pattern 1'),
-                    RaisedButton(
-                      child: Text('ただ次画面に行って戻るだけ'),
-                      onPressed: () {
-                        Navigator.of(context).push(
-                          // MaterialDesignではなくiOS風のアニメーションで遷移
-                          CupertinoPageRoute(
-                            builder: (context) {
-                              return SecondPage();
-                            },
-                          ),
-                        );
-                      },
-                    ),
-                  ],
-                ),
-                _buildContents(
-                  [
-                    Text('Pattern 2'),
-                    RaisedButton(
-                      child: Text('行って戻った直後にダイアログを表示する'),
-                      onPressed: () async {
-                        await Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) {
-                              return SecondPage();
-                            },
-                          ),
-                        );
-                        // ここは async-await で次画面遷移した先から戻る遷移の直後に実行される
-                        showDialog(
-                          context: context,
-                          builder: (context) => SampleDialog(),
-                        );
-                      },
-                    ),
-                  ],
-                ),
-                _buildContents(
-                  [
-                    Text('Pattern 3'),
-                    RaisedButton(
-                      child: Text('遷移後入力した内容を戻った直後ダイアログ表示'),
-                      onPressed: () async {
-                        // 遷移後の画面でpopの引数に持たせた値を受け取る
-                        final String result = await Navigator.of(context).push(
-                          MaterialPageRoute<String>(
-                            builder: (context) {
-                              return SecondTextInputPage();
-                            },
-                          ),
-                        );
-                        if (result != null) {
-                          final contentText = 'I received ' + result + ' !';
-                          showDialog(
-                            context: context,
-                            builder: (context) {
-                              return SampleDialog(
-                                contentText: contentText,
-                              );
-                            },
-                          );
-                        }
-                      },
-                    ),
-                  ],
-                ),
-              ],
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            // 4. Navigate to the widget
+            // A button that navigates to a named route that. The named route
+            // extracts the arguments by itself.
+            RaisedButton(
+              child: Text("Navigate to screen that extracts arguments"),
+              onPressed: () {
+                // When the user taps the button, navigate to a named route
+                // and provide the arguments as an optional parameter.
+                Navigator.pushNamed(
+                  context,
+                  ExtractArgumentsScreen.routeName,
+                  arguments: ScreenArguments(
+                    'Extract Arguments Screen',
+                    'This message is extracted in the build method.',
+                  ),
+                );
+              },
             ),
-          ),
+            // A button that navigates to a named route. For this route, extract
+            // the arguments in the onGenerateRoute function and pass them to the screen.
+            RaisedButton(
+              child: Text("Navigate to a named that accepts arguments"),
+              onPressed: () {
+                // When the user taps the button, navigate to a named route
+                // and provide the arguments as an optional parameter.
+                Navigator.pushNamed(
+                  context,
+                  PassArgumentsScreen.routeName,
+                  arguments: ScreenArguments(
+                    'Accept Arguments Screen',
+                    'This message is extracted in the onGenerateRoute function.',
+                  ),
+                );
+              },
+            ),
+          ],
         ),
       ),
     );
   }
 }
 
-Widget _buildContents(List<Widget> children) {
-  return Padding(
-    padding: const EdgeInsets.only(bottom: 40.0),
-    child: Column(
-      children: children,
-    ),
-  );
-}
-
-class SampleDialog extends StatelessWidget {
-  const SampleDialog({Key key, this.contentText}) : super(key: key);
-
-  final String contentText;
+// 2. Create a widget that extracts the arguments
+// A Widget that extracts the necessary arguments from the ModalRoute.
+class ExtractArgumentsScreen extends StatelessWidget {
+  static const routeName = '/extractArguments';
 
   @override
   Widget build(BuildContext context) {
-    final content = contentText ?? 'I\'m back!'; // ?? - null判定（if null then...)
-    // 上記はあくまでもfinalであるcontentの初期化にcontentTextか、それがnullの場合リテラル代入
-    // ??=を使うと左辺がnullの場合に同じくfinalであるcontentTextへの代入になるのでエラー
+    // Extract the arguments from the current ModalRoute settings and cast
+    // them as ScreenArguments.
+    final ScreenArguments args = ModalRoute.of(context).settings.arguments;
 
-    return AlertDialog(
-      title: Text(
-        'Alert',
-        style: Theme.of(context).textTheme.title,
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(args.title),
       ),
-      content: Text(
-        content,
-        maxLines: 2,
-        style: Theme.of(context).textTheme.body2,
+      body: Center(
+        child: Text(args.message),
       ),
     );
   }
+}
+
+// 2-b. Create a widget that accepts the arguments from onGenerateRoute()
+// A Widget that accepts the necessary arguments via the constructor.
+class PassArgumentsScreen extends StatelessWidget {
+  static const routeName = '/passArguments';
+
+  final String title;
+  final String message;
+
+  // This Widget accepts the arguments as constructor parameters. It does not
+  // extract the arguments from the ModalRoute.
+  //
+  // The arguments are extracted by the onGenerateRoute function provided to the
+  // MaterialApp widget.
+  const PassArgumentsScreen({
+    Key key,
+    @required this.title,
+    @required this.message,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(title),
+      ),
+      body: Center(
+        child: Text(message),
+      ),
+    );
+  }
+}
+
+// 1. Define the arguments you need to pass
+// You can pass any object to the arguments parameter. In this example,
+// create a class that contains both a customizable title and message.
+class ScreenArguments {
+  final String title;
+  final String message;
+
+  ScreenArguments(this.title, this.message);
 }

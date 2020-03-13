@@ -1,60 +1,51 @@
 import 'package:flutter/material.dart';
 
-class SecondPage extends StatelessWidget {
-  SecondPage({Key key}) : super(key: key);
+class NextPage extends StatefulWidget {
+  NextPage({Key key, this.title}) : super(key: key);
+
+  final String title;
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Second Page')),
-      body: Center(
-        child: RaisedButton(
-          child: Text('Back'),
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-        ),
-      ),
-    );
-  }
+  _NextPageState createState() => _NextPageState();
 }
 
-class SecondTextInputPage extends StatefulWidget {
-  @override
-  SecondTextInputPageState createState() => SecondTextInputPageState();
-}
-
-class SecondTextInputPageState extends State<SecondTextInputPage> {
-  String inputValue;
+class _NextPageState extends State<NextPage> {
+  String inputMessage;
 
   @override
   void initState() {
-    inputValue = '';
+    inputMessage = '';
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
+    // 元のページでpushに渡された値を取り出す
+    final args = ModalRoute.of(context).settings.arguments;
+    print(args);
+
     return Scaffold(
-      appBar: AppBar(title: Text('Second Page')),
+      appBar: AppBar(title: Text(widget.title)),
       body: SafeArea(
         child: SingleChildScrollView(
-          child: Padding(
-            padding: EdgeInsets.only(
-              top: MediaQuery.of(context).size.height / 3,
-              left: 60.0,
-              right: 60.0,
-            ),
-            child: TextField(
-              onChanged: (value) {
-                inputValue = value;
-              },
-              onEditingComplete: () {
-                Navigator.of(context).pop(inputValue);
-              },
-              autofocus: true,
-              autocorrect: false,
-            ),
+          child: Column(
+            children: <Widget>[
+              Padding(
+                padding: EdgeInsets.only(
+                  top: 50.0,
+                ),
+                child: TextField(
+                  onChanged: (value) {
+                    inputMessage = value;
+                  },
+                  onEditingComplete: () {
+                    Navigator.of(context).pop(inputMessage);
+                  },
+                  autofocus: true,
+                  autocorrect: false,
+                ),
+              ),
+            ],
           ),
         ),
       ),
